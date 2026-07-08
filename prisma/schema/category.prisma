@@ -1,0 +1,8 @@
+model Category {
+    id         String     @id @default(uuid())
+    name       String     @unique
+    updatedAt  DateTime   @updatedAt
+    properties Property[]
+
+    @@map("categories")
+}
