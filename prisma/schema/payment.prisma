@@ -4,6 +4,7 @@ model Payment {
     rentalRequest   RentalRequest @relation(fields: [rentalRequestId], references: [id])
     amount          Float
     transactionId   String?
+    provider PaymentProvider
     status          PaymentStatus @default(PENDING)
     paidAt          DateTime?
 

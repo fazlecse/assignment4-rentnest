@@ -6,6 +6,11 @@ import { notFound } from "./middlewares/notFound";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { authRoutes } from "./modules/auth/auth.route";
 import { categoryRoutes } from "./modules/category/category.route";
+import { propertyRoutes } from "./modules/property/property.route";
+import { landlordPropertyRoutes } from "./modules/property/landlord-property.route";
+import { rentalRoutes } from "./modules/rental/rental.route";
+import { landlordRentalRoutes } from "./modules/rental/landlord-rental.route";
+import { reviewRoutes } from "./modules/review/review.route";
 
 const app: Application = express();
 app.use(
@@ -25,6 +30,11 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/properties", propertyRoutes);
+app.use("/api/landlord/properties", landlordPropertyRoutes);
+app.use("/api/rentals", rentalRoutes);
+app.use("/api/landlord/requests", landlordRentalRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.use(notFound);
 app.use(globalErrorHandler);
