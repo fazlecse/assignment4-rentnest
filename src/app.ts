@@ -11,6 +11,7 @@ import { landlordPropertyRoutes } from "./modules/property/landlord-property.rou
 import { rentalRoutes } from "./modules/rental/rental.route";
 import { landlordRentalRoutes } from "./modules/rental/landlord-rental.route";
 import { reviewRoutes } from "./modules/review/review.route";
+import { adminRoutes } from "./modules/admin/admin.route";
 
 const app: Application = express();
 app.use(
@@ -35,6 +36,7 @@ app.use("/api/landlord/properties", landlordPropertyRoutes);
 app.use("/api/rentals", rentalRoutes);
 app.use("/api/landlord/requests", landlordRentalRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use(notFound);
 app.use(globalErrorHandler);
