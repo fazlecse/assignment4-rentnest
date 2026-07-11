@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import { Router } from "express";
 
 import { Role } from "../../../generated/prisma/enums";
 import validateRequest from "../../middlewares/validate.request";
@@ -16,5 +16,7 @@ router.post(
 );
 
 router.post("/webhook", paymentController.handleWebhook);
+
+router.get("/", auth(Role.TENANT), paymentController.getMyPayments);
 
 export const paymentRoutes = router;

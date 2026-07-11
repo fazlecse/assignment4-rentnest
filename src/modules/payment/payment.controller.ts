@@ -3,6 +3,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
 import { NextFunction, Request, Response } from "express";
 import { paymentService } from "./payment.service";
+import { IPaymentQuery } from "./payment.interface";
 
 const createCheckoutSession = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -30,7 +31,25 @@ const handleWebhook = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getMyPayments = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await paymentService.getMyPayments(
+      req.user?.id as string,
+      req.query as IPaymentQuery,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Payments retrieved successfully",
+      meta: result.meta,
+      data: result.data,
+    });
+  },
+);
+
 export const paymentController = {
   createCheckoutSession,
   handleWebhook,
+  getMyPayments,
 };

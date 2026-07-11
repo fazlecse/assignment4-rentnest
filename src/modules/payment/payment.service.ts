@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import config from "../../config";
 import {
@@ -7,6 +8,7 @@ import {
   RentalStatus,
 } from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
+import { IPaymentQuery } from "./payment.interface";
 
 const createCheckoutSession = async (
   tenantId: string,
@@ -155,7 +157,41 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
   });
 };
 
+const getMyPayments = async (tenantId: string, query: IPaymentQuery) => {
+  const { status, page = "1", limit = "10" } = query;
+
+  const pageNumber = Number(page) || 1;
+  const limitNumber = Number(limit) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const whereConditions: Prisma.PaymentWhereInput = {
+    rentalRequest: { tenantId },
+    ...(status && { status: status as PaymentStatus }),
+  };
+
+  const [payments, total] = await Promise.all([
+    prisma.payment.findMany({
+      where: whereConditions,
+      skip,
+      take: limitNumber,
+      orderBy: { createdAt: "desc" },
+      include: {
+        rentalRequest: {
+          include: { property: true },
+        },
+      },
+    }),
+    prisma.payment.count({ where: whereConditions }),
+  ]);
+
+  return {
+    meta: { page: pageNumber, limit: limitNumber, total },
+    data: payments,
+  };
+};
+
 export const paymentService = {
   createCheckoutSession,
   handleWebhook,
+  getMyPayments,
 };
