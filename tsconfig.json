@@ -9,7 +9,7 @@
     // See also https://aka.ms/tsconfig/module
     "module": "esnext", //02
     "moduleResolution":"bundler", //03
-    "target": "es2023", //04
+    "target": "esnext", //04
     "types": ["node"], //05
     // For nodejs:
     // "lib": ["esnext"],
