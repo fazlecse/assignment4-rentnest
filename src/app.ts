@@ -29,7 +29,7 @@ app.use(urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello world!");
+  res.send("Express server RentNest!");
 });
 
 app.use("/api/auth", authRoutes);
