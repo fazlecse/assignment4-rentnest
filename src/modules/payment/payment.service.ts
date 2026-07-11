@@ -190,8 +190,42 @@ const getMyPayments = async (tenantId: string, query: IPaymentQuery) => {
   };
 };
 
+const getSinglePayment = async (
+  userId: string,
+  role: string,
+  paymentId: string,
+) => {
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    include: {
+      rentalRequest: {
+        include: {
+          property: true,
+          tenant: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!payment) {
+    throw new Error("Payment not found");
+  }
+
+  const isTenant = payment.rentalRequest.tenantId === userId;
+  const isLandlord = payment.rentalRequest.property.landlordId === userId;
+
+  if (!isTenant && !isLandlord && role !== "ADMIN") {
+    throw new Error("You are not authorized to view this payment");
+  }
+
+  return payment;
+};
+
 export const paymentService = {
   createCheckoutSession,
   handleWebhook,
   getMyPayments,
+  getSinglePayment,
 };

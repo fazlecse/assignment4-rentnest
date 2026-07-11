@@ -48,8 +48,26 @@ const getMyPayments = catchAsync(
   },
 );
 
+const getSinglePayment = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await paymentService.getSinglePayment(
+      req.user?.id as string,
+      req.user?.role as string,
+      req.params.id as string,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Payment retrieved successfully",
+      data: result,
+    });
+  },
+);
+
 export const paymentController = {
   createCheckoutSession,
   handleWebhook,
   getMyPayments,
+  getSinglePayment,
 };
