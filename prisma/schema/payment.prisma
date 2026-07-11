@@ -1,11 +1,12 @@
 model Payment {
-    id              String        @id @default(uuid())
-    rentalRequestId String        @unique
-    rentalRequest   RentalRequest @relation(fields: [rentalRequestId], references: [id])
-    amount          Float
+    id              String          @id @default(uuid())
+    rentalRequestId String          @unique
+    rentalRequest   RentalRequest   @relation(fields: [rentalRequestId], references: [id])
+    stripeSessionId String?         @unique
     transactionId   String?
-    provider PaymentProvider
-    status          PaymentStatus @default(PENDING)
+    amount          Float
+    provider        PaymentProvider
+    status          PaymentStatus   @default(PENDING)
     paidAt          DateTime?
 
     createdAt DateTime @default(now())
