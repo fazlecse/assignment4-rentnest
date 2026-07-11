@@ -114,7 +114,11 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
     throw new Error("Invalid webhook signature");
   }
 
-  if (event.type !== "checkout.session.completed") {
+  if (
+    event.type !== "checkout.session.completed" &&
+    event.type !== "checkout.session.expired" &&
+    event.type !== "checkout.session.async_payment_failed"
+  ) {
     return;
   }
 
@@ -132,6 +136,18 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
 
   if (!payment) {
     throw new Error("Payment not found");
+  }
+
+  if (event.type !== "checkout.session.completed") {
+    await prisma.payment.update({
+      where: {
+        id: payment.id,
+      },
+      data: {
+        status: PaymentStatus.FAILED,
+      },
+    });
+    return;
   }
 
   await prisma.$transaction(async (tx) => {
