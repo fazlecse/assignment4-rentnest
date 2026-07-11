@@ -1,6 +1,11 @@
+import Stripe from "stripe";
 import { prisma } from "../../lib/prisma";
 import config from "../../config";
-import { PaymentProvider, PaymentStatus, RentalStatus } from "../../../generated/prisma/enums";
+import {
+  PaymentProvider,
+  PaymentStatus,
+  RentalStatus,
+} from "../../../generated/prisma/enums";
 import { stripe } from "../../lib/stripe";
 
 const createCheckoutSession = async (
@@ -94,6 +99,63 @@ const createCheckoutSession = async (
   };
 };
 
+const handleWebhook = async (payload: Buffer, signature: string) => {
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      payload,
+      signature,
+      config.stripe_webhook_secret,
+    );
+  } catch {
+    throw new Error("Invalid webhook signature");
+  }
+
+  if (event.type !== "checkout.session.completed") {
+    return;
+  }
+
+  const session = event.data.object as Stripe.Checkout.Session;
+
+  if (!session.id) {
+    throw new Error("Invalid checkout session");
+  }
+
+  const payment = await prisma.payment.findUnique({
+    where: {
+      stripeSessionId: session.id,
+    },
+  });
+
+  if (!payment) {
+    throw new Error("Payment not found");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.payment.update({
+      where: {
+        id: payment.id,
+      },
+      data: {
+        status: PaymentStatus.PAID,
+        transactionId: session.payment_intent as string,
+        paidAt: new Date(),
+      },
+    });
+
+    await tx.rentalRequest.update({
+      where: {
+        id: payment.rentalRequestId,
+      },
+      data: {
+        status: RentalStatus.COMPLETED,
+      },
+    });
+  });
+};
+
 export const paymentService = {
   createCheckoutSession,
+  handleWebhook,
 };
